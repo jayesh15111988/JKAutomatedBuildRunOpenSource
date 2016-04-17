@@ -45,6 +45,6 @@ permission with command `chmod 0755 automated_build.sh` to run the script.).**
 *If there are any bugs, feel free to add an issue or send a pull request.*
 
 ###Demo
-<p>
-[AutomatedBuild Maker Demo]: https://github.com/jayesh15111988/JKAutomatedBuildRunOpenSource/blob/master/Demo/Automated_Script_Demo_Small.gif "Automated clone, pod install, build and run application"
-</p>
+![alt text][AutomatedBuildMakerDemo]
+
+[AutomatedBuildMakerDemo]: https://github.com/jayesh15111988/JKAutomatedBuildRunOpenSource/blob/master/Demo/Automated_Script_Demo_Small.gif "Automated clone, pod install, build and run application"
