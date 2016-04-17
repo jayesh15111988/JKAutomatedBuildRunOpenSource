@@ -43,3 +43,8 @@ and one of them is framework, this script will not be able to find `[Project_Nam
 permission with command `chmod 0755 automated_build.sh` to run the script.).**
 
 *If there are any bugs, feel free to add an issue or send a pull request.*
+
+###Demo
+<p>
+<img src='Demo/Automated_Script_Demo_Small'/>
+</p>
