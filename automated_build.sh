@@ -9,6 +9,10 @@
 # Reference - Thanks to https://github.com/phonegap/ios-sim and https://gist.github.com/shazron/1314458/7771616dbc377fef7bb2a4521bcbac460e96adfe for their valuable 
 # contribution. Their code allowed me to write this script for easy automation.
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
 GIT_CLONE_PATH=$1
 DEVICETYPE=$2
 CONFIGURATION=$3
@@ -19,24 +23,27 @@ path="$GIT_CLONE_PATH"
 name=$(basename "$path" ".git")
 PROJECTNAME=""
 
+# Used to check is package ios-sim required to run project on the simulator from command line exists. If not, it will download it by user's consent before continuing.
 command_exists () {
     type "$1" &> /dev/null ;
 }
 
-read_dom () {
-    local IFS=\>
-    read -d \< ENTITY CONTENT
-}
-
-function help
-{
-  echo "Usage: $0 <GIT clone path> [Device Type] [configuration] [logname]"
-  echo "<GIT Clone path> Full URL of Git clone path"
-  echo "[Device Type] (optional) Device type you want to run project on. If not provided script will default to use 'iPhone-5s, 8.4'"
-  echo "[configuration] (optional) Debug or Release, defaults to Debug"
-  echo "[logname] (optional) the log file to write to. defaults to stderror.log"
+function help {
+  printf "${GREEN}Usage: $0 <GIT clone path> [Device Type] [configuration] [logname]"
+  echo
+  printf "${GREEN}<GIT Clone path> Full URL of Git clone path"
+  echo
+  printf "${GREEN}[Device Type] (optional) Device type you want to run project on. If not provided script will default to use 'iPhone-6, 9.2'. To see full list of available devices, please install ios-sim and then type command ios-sim showdevicetypes"
+  echo
+  printf "${GREEN}[configuration] (optional) Debug or Release, defaults to Debug"
+  echo
+  printf "${GREEN}[logname] (optional) the log file to write to. defaults to stderror.log${NC}"
+  echo
+  echo
+  echo
 }
 # Check if user has pre-installed ios-sim. If not, give option if this program can install it.
+
 if ! command_exists ios-sim ; then
     read -p "It looks like plugin ios-sim is not installed. You can installed it directly from \
     https://github.com/phonegap/ios-sim. Do you want automated build program to automatically install it for you? (y/n)" -n 1 -r
@@ -44,7 +51,8 @@ if ! command_exists ios-sim ; then
   if [[ $REPLY =~ ^[Yy]$ ]] ; then
     npm install ios-sim -g
   else 
-    echo "Please install package ios-sim before continuing with automated build program"
+    printf "${RED}Please install package ios-sim before continuing with automated build program. Once you are done, try running script again.${NC}"
+    echo
     exit 1
   fi
 fi
@@ -64,7 +72,6 @@ if [ -z "$DEVICETYPE" ] ; then
   DEVICETYPE="iPhone-6, 9.3"
 fi
 
-
 # check third argument, default to "stderror.log"
 if [ -z "$LOGFILE" ] ; then
   LOGFILE=stderr.log
@@ -72,13 +79,14 @@ fi
 
 # backup existing logfile (start fresh each time)
 if [ -f $LOGFILE ]; then
-mv $LOGFILE $LOGFILE.bak  
+  mv $LOGFILE $LOGFILE.bak  
 fi
 
 FULL_PATH="$current_dir/$name"
 
 if [ -d "$FULL_PATH" ]; then
-  echo "Project Directory with name $name already exists. CDing directory into existing directory"
+  printf "${GREEN}Project Directory with name $name already exists. Moving into existing directory${NC}"
+  echo
   cd $name
 else 
   git clone "$1"
@@ -94,24 +102,18 @@ for file in $(find $current_dir/$name -name '*.xcworkspace' -or -name '*.xcodepr
       if [ -d $file ]
       then         
         OLD_DIRECTORY="$DIR"     
-        DIR=$(dirname "$file") 
-        echo "File is $file"
-        echo
+        DIR=$(dirname "$file")           
 
         if [[ $file != *"pods"* ]] && [[ $file != *"Pods"* ]];then
           filename=$(basename "$file")
-          PROJECTNAME="${filename%.*}"
-          echo "pod not found"
-        else 
-          echo "pod found"
+          PROJECTNAME="${filename%.*}"        
+        else           
           continue;
         fi
               
-        if [[ $DIR == *"/Pods"* ]] || [[ $DIR == *"/pods"* ]] || [[ $DIR == *"Pods"* ]] || [[ $DIR == *"pods"* ]]; then          
-          echo "It has Pods directory"
+        if [[ $DIR == *"/Pods"* ]] || [[ $DIR == *"/pods"* ]] || [[ $DIR == *"Pods"* ]] || [[ $DIR == *"pods"* ]]; then                    
           DIR="$OLD_DIRECTORY"          
-        else
-          echo "Does not have pods directory"          
+        else          
           break
         fi 
       fi
@@ -122,22 +124,11 @@ PROJECT_FILE_NAME="$filename"
 filename=$(basename "$filename")
 PROJECT_EXTENSION="${filename##*.}"
 
-echo "Project name is $PROJECTNAME"
-echo 
-echo "Full Path to xcodeproj or xcworkspace file -> $DIR"
-echo
-echo "Full path to base folder -> $FULL_PATH"
-echo
-echo "Folder with actual project file with demo wrt base folder -> $FOLDER_WITH_PROJECT_DEMO"
-echo
-
 if [ ! "$FULL_PATH" = "$DIR" ] ; then
   original_path_length=${#FULL_PATH}
-  updated_path_length=${#DIR}
-  #echo "1. $original_path_length 2. $updated_path_length"
+  updated_path_length=${#DIR}  
   FOLDER_WITH_PROJECT_DEMO=${DIR:original_path_length+1:updated_path_length - original_path_length - 1}
   cd "$FOLDER_WITH_PROJECT_DEMO"
-  echo "CDIIIng into $FOLDER_WITH_PROJECT_DEMO"
 fi
 
 if [ -f Podfile ] || [ -f podfile ]
@@ -145,39 +136,34 @@ then
   pod install
   PROJECT_EXTENSION="xcworkspace"
 else
-  echo "No podfile found"
+  printf "${GREEN}No podfile found${NC}"
+  echo
+  echo
 fi
 
 SCHEME_NAME=$PROJECTNAME
 
 FULL_SCHEME_PATH="$DIR/$PROJECTNAME.xcodeproj/xcshareddata/xcschemes"
 NUMBER_OF_PROJECT_SCHEMES=$(find $FULL_SCHEME_PATH -name "*.xcscheme" -maxdepth 1 | wc -l)
-echo "Full scheme path ** $FULL_SCHEME_PATH"
+
 if [ "$NUMBER_OF_PROJECT_SCHEMES" -lt 1 ]; then
-  echo "No schemes found in the project. Please manually open the xcodeproj -> go to manage schemes and then make sure the scheme under consideration is checked shared"
+  printf "${RED}No schemes found in the project. Please manually open the xcodeproj -> go to manage schemes and then make sure the scheme is marked as shared ${NC}"
   exit 1;
 else
-  echo "Number of schemes $NUMBER_OF_PROJECT_SCHEMES"
+  
   for file in $(find $FULL_SCHEME_PATH -name '*.xcscheme')
   do
-    BUILDABLE_NAME=$(xpath $file '/Scheme/BuildAction/BuildActionEntries/BuildActionEntry/BuildableReference/@BuildableName' | awk -F'[="]' '!/>/{print $(NF-1)}')
-    echo "Buldable name is $BUILDABLE_NAME"
-    echo
+    BUILDABLE_NAME=$(xpath $file '/Scheme/BuildAction/BuildActionEntries/BuildActionEntry/BuildableReference/@BuildableName' | awk -F'[="]' '!/>/{print $(NF-1)}')        
     if [[ $BUILDABLE_NAME =~ \.app$ ]] || [[ $BUILDABLE_NAME =~ \.App$ ]]; then
-      SCHEME_NAME="${BUILDABLE_NAME%%.*}" 
-      echo "Scheme Name is $SCHEME_NAME"
+      SCHEME_NAME="${BUILDABLE_NAME%%.*}"       
       break;
-    else
-      echo "Extension does not exist"
     fi    
   done
 fi
 
 if [ "$PROJECT_EXTENSION" = "xcodeproj" ]; then 
-  echo "xcode proj"
   xcodebuild -configuration $CONFIGURATION -sdk iphonesimulator -project $PROJECTNAME.xcodeproj -scheme $SCHEME_NAME -derivedDataPath "$current_dir/$name"
 else
-  echo "xc work space"
   xcodebuild -configuration $CONFIGURATION -sdk iphonesimulator -workspace $PROJECTNAME.xcworkspace -scheme $SCHEME_NAME -derivedDataPath "$current_dir/$name"
 fi;
 
