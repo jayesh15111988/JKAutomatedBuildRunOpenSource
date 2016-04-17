@@ -161,6 +161,8 @@ else
   for file in $(find $FULL_SCHEME_PATH -name '*.xcscheme')
   do
     BUILDABLE_NAME=$(xpath $file '/Scheme/BuildAction/BuildActionEntries/BuildActionEntry/BuildableReference/@BuildableName' | awk -F'[="]' '!/>/{print $(NF-1)}')
+    echo "Buldable name is $BUILDABLE_NAME"
+    echo
     if [[ $BUILDABLE_NAME =~ \.app$ ]] || [[ $BUILDABLE_NAME =~ \.App$ ]]; then
       SCHEME_NAME="${BUILDABLE_NAME%%.*}" 
       echo "Scheme Name is $SCHEME_NAME"
@@ -170,8 +172,6 @@ else
     fi    
   done
 fi
-
-echo "Final Scheme name is $SCHEME_NAME"
 
 if [ "$PROJECT_EXTENSION" = "xcodeproj" ]; then 
   echo "xcode proj"
