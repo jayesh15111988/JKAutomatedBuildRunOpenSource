@@ -61,7 +61,7 @@ if [ -z "$CONFIGURATION" ] ; then
 fi
 
 if [ -z "$DEVICETYPE" ] ; then
-  DEVICETYPE="iPhone-5s, 8.4"
+  DEVICETYPE="iPhone-6, 9.3"
 fi
 
 
@@ -142,7 +142,7 @@ fi
 
 if [ -f Podfile ] || [ -f podfile ]
 then
-  #pod install
+  pod install
   PROJECT_EXTENSION="xcworkspace"
 else
   echo "No podfile found"
@@ -172,7 +172,6 @@ else
 fi
 
 echo "Final Scheme name is $SCHEME_NAME"
-exit 1;
 
 if [ "$PROJECT_EXTENSION" = "xcodeproj" ]; then 
   echo "xcode proj"
@@ -183,7 +182,7 @@ else
 fi;
 
 ios-sim --devicetypeid "${DEVICETYPE}" launch "$current_dir/$name/Build/Products/$CONFIGURATION-iphonesimulator/$SCHEME_NAME.app"
-osascript -e "tell application \"iPhone Simulator\" to activate"
+osascript -e "tell application \"iPhone Simulator\" to activate. If you think this is a device or an iOS version issue, please try padding another device type through command line."
 tail -f $LOGFILE
 
 exit
