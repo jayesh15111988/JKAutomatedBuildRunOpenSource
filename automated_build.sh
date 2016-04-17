@@ -69,7 +69,7 @@ if [ -z "$CONFIGURATION" ] ; then
 fi
 
 if [ -z "$DEVICETYPE" ] ; then
-  DEVICETYPE="iPhone-6, 9.3"
+  DEVICETYPE="iPhone-6, 9.2"
 fi
 
 # check third argument, default to "stderror.log"
